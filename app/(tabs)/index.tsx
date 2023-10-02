@@ -8,13 +8,36 @@ import { Recording } from 'expo-av/build/Audio';
 import {uploadAsync} from 'expo-file-system';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
+import { Stopwatch } from 'react-native-stopwatch-timer';
 
 const API_ENDPOINT='https://y9pz5kubn2.execute-api.us-east-1.amazonaws.com'
+
+const options = {
+  container: {
+    backgroundColor: '#FF0000',
+    padding: 5,
+    borderRadius: 5,
+    width: 200,
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 25,
+    color: '#FFF',
+    marginLeft: 7,
+  },
+};
 
 export default function TabOneScreen() {
 
   const [recording, setRecording] = useState<Recording>();
   const [patientId, setPatientId] = useState('');
+
+  const [isTimerStart, setIsTimerStart] = useState(false);
+  const [isStopwatchStart, setIsStopwatchStart] = useState(false);
+  const [resetStopwatch, setResetStopwatch] = useState(false);
+
+  
+  
 async function startRecording() {
   try {
     Toast.show('Recording Started.', {
@@ -34,6 +57,8 @@ async function startRecording() {
     const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY
     );
     setRecording(recording);
+    setIsStopwatchStart(true);
+    setResetStopwatch(false);
     console.log('Recording started');
   } catch (err) {
     console.error('Failed to start recording', err);
@@ -41,6 +66,8 @@ async function startRecording() {
 }
 
 async function stopRecording() {
+  setIsStopwatchStart(false);
+  setResetStopwatch(false);
   Toast.show('Recording Stopped.', {
     duration: Toast.durations.SHORT,
     animation: true,
@@ -100,6 +127,7 @@ const uploadAudioToTranscribe = async (file?: string)=>{
         animation: true,
         position: Toast.positions.BOTTOM
       });
+      setResetStopwatch(true);
       
     }
   }
@@ -114,16 +142,24 @@ const uploadAudioToTranscribe = async (file?: string)=>{
 
     <View style={styles.container}>
       <Text style={styles.title}>HealthLens Session</Text>
+      <Stopwatch
+            laps
+            msecs
+            start={isStopwatchStart}
+            //To start
+            reset={resetStopwatch}
+            //To reset
+            options={options}
+            //options for the styling
+          />
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-
       <Button
         title={recording ? 'Stop Recording' : 'Start Recording'}
         onPress={recording ? stopRecording : startRecording}
       />
-
-
-
-      {/* <EditScreenInfo path="app/(tabs)/index.tsx" /> */}
+      {patientId && (
+        <Text style={styles.patient}>Patient ID: {patientId}</Text>
+      )}
     </View>
     </RootSiblingParent>
 
@@ -139,10 +175,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 15
   },
   separator: {
-    marginVertical: 30,
+    marginVertical: 40,
     height: 1,
     width: '80%',
   },
+  patient: {
+    marginTop: 50
+  }
 });
