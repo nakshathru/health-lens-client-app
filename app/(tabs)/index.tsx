@@ -9,7 +9,7 @@ import {uploadAsync} from 'expo-file-system';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 
-const API_ENDPOINT='https://uoxfgxbl34.execute-api.us-east-1.amazonaws.com'
+const API_ENDPOINT='https://y9pz5kubn2.execute-api.us-east-1.amazonaws.com'
 
 export default function TabOneScreen() {
 
@@ -30,6 +30,7 @@ async function startRecording() {
     });
     setPatientId(randomUUID())
     console.log('Starting recording..');
+    
     const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY
     );
     setRecording(recording);
@@ -57,6 +58,8 @@ async function stopRecording() {
   
   console.log('Recording stopped and stored at', uri);
 
+  console.log('Patient ID', patientId);
+  
   await uploadAudioToTranscribe(uri!)
 }
 
